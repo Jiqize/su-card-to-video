@@ -1,0 +1,8 @@
+node_modules/
+.DS_Store
+
+examples/basic-16x9/output/*.mp4
+examples/basic-16x9/output/*.m4a
+examples/basic-16x9/output/*.wav
+examples/basic-16x9/output/*.mp3
+
