@@ -1,1 +1,70 @@
-{"meta":{"title":"AI card video","style":"bauhaus"},"scenes":[]}
+{
+  "meta": {
+    "title": "AI Card Video Pipeline",
+    "kicker": "su-card-to-video",
+    "style": "bauhaus",
+    "width": 1920,
+    "height": 1080,
+    "fps": 30,
+    "compositionId": "su-card-to-video-generated"
+  },
+  "scenes": [
+    {
+      "layout": "cover",
+      "duration": 4.0,
+      "kicker": "AI Card Video",
+      "title": "Turn a script into\nmotion cards",
+      "lead": "JSON owns the content. HTML and CSS own the visual system. GSAP owns rhythm. FFmpeg owns delivery.",
+      "caption": "Generate a 16:9 HTML composition, then render it to MP4.",
+      "marquee": "script / card / motion / audio / mp4"
+    },
+    {
+      "layout": "cards",
+      "duration": 4.8,
+      "kicker": "Engine",
+      "title": "What changed in this version",
+      "lead": "Content, style, timing and output path are now controlled by data and flags.",
+      "cards": [
+        { "title": "JSON driven", "body": "Edit data/demo-video.json instead of hand-editing HTML every time." },
+        { "title": "Style selectable", "body": "Choose from Bauhaus, Art Deco, Pop Art, Y2K and more." },
+        { "title": "Audio aware", "body": "When audio is passed in, ffprobe reads duration and the visuals are rebuilt to match." }
+      ],
+      "caption": "The workflow stays local, simple and friendly to coding agents."
+    },
+    {
+      "layout": "process",
+      "duration": 5.0,
+      "kicker": "Workflow",
+      "title": "From script to video",
+      "steps": [
+        { "title": "Write script", "body": "Put titles, cards, captions, steps and metrics in JSON." },
+        { "title": "Pick style", "body": "Use --style to switch between 16 visual systems." },
+        { "title": "Build HTML", "body": "Generate a 1920 by 1080 composition and render metadata." },
+        { "title": "Mux MP4", "body": "HyperFrames renders visuals. FFmpeg combines audio and video." }
+      ],
+      "caption": "Visual duration can come from JSON or from the audio file."
+    },
+    {
+      "layout": "metrics",
+      "duration": 4.0,
+      "kicker": "Visual Systems",
+      "title": "More expressive card videos",
+      "lead": "The visual grammar borrows from the social card style system and adds motion layers for video.",
+      "metrics": [
+        { "value": "16", "label": "style presets" },
+        { "value": "5", "label": "scene layouts" },
+        { "value": "1", "label": "local render command" }
+      ],
+      "caption": "Style switches affect color, type, border, texture, shapes and motion tone."
+    },
+    {
+      "layout": "closing",
+      "duration": 3.2,
+      "kicker": "Ready",
+      "title": "Edit text, switch style, add audio, reuse",
+      "lead": "This is now an extensible skeleton for card-video production.",
+      "cta": "npm run render -- --style y2k",
+      "caption": "Next layers can include TTS, batch rendering and publishing workflows."
+    }
+  ]
+}
