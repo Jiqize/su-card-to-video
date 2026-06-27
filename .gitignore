@@ -6,3 +6,8 @@ examples/basic-16x9/output/*.m4a
 examples/basic-16x9/output/*.wav
 examples/basic-16x9/output/*.mp3
 
+examples/generated-16x9/output/*.mp4
+examples/generated-16x9/output/*.m4a
+examples/generated-16x9/output/*.wav
+examples/generated-16x9/output/*.mp3
+examples/generated-16x9/render-meta.json
