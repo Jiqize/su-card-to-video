@@ -11,3 +11,10 @@ examples/generated-16x9/output/*.m4a
 examples/generated-16x9/output/*.wav
 examples/generated-16x9/output/*.mp3
 examples/generated-16x9/render-meta.json
+
+examples/generated-remotion/props.json
+examples/generated-remotion/render-meta.json
+examples/generated-remotion/output/*.mp4
+examples/generated-remotion/output/*.m4a
+examples/generated-remotion/output/*.wav
+examples/generated-remotion/output/*.mp3
