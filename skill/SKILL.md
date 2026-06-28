@@ -1,6 +1,6 @@
 ---
 name: su-card-to-video
-description: Create a local 16:9 AI card video from a JSON script, selectable visual styles, GSAP motion, HyperFrames rendering, and FFmpeg audio-video muxing. Use when the user wants reusable card-video generation without Jianying/CapCut, without appearing on camera, and without image generation APIs.
+description: Create a local 16:9 AI card video from a JSON script, selectable visual styles, HyperFrames or Remotion rendering, GSAP or React-based motion, and FFmpeg audio-video muxing. Use when the user wants reusable card-video generation without Jianying/CapCut, without appearing on camera, and without image generation APIs.
 ---
 
 # su-card-to-video
@@ -8,7 +8,7 @@ description: Create a local 16:9 AI card video from a JSON script, selectable vi
 Use this skill to create a local AI card video:
 
 ```text
-script/captions JSON -> generated HTML/CSS cards -> GSAP timeline -> HyperFrames render -> FFmpeg mux -> MP4
+script/captions JSON -> generated cards -> HyperFrames or Remotion render -> FFmpeg mux -> MP4
 ```
 
 ## Boundaries
@@ -25,17 +25,20 @@ script/captions JSON -> generated HTML/CSS cards -> GSAP timeline -> HyperFrames
 - Aspect ratio: 16:9
 - Video format: MP4
 - Script source: `data/demo-video.json`
-- Generated HTML: `examples/generated-16x9/index.html`
-- Final output: `examples/generated-16x9/output/final.mp4`
+- HyperFrames generated HTML: `examples/generated-16x9/index.html`
+- Remotion props: `examples/generated-remotion/props.json`
+- HyperFrames output: `examples/generated-16x9/output/final.mp4`
+- Remotion output: `examples/generated-remotion/output/final.mp4`
 
 ## Workflow
 
 1. Turn the user's script into 4 to 6 concise card-video scenes.
-2. Edit `data/demo-video.json`, not the generated HTML.
+2. Edit `data/demo-video.json`, not generated renderer files.
 3. Choose a style with `--style`, or set `meta.style` in JSON.
 4. Run `npm run validate`.
-5. Run `npm run render -- --style <style-key>`.
-6. If an audio file is provided, pass `--audio ./voice.mp3`; the render script will align visual duration to the audio duration.
+5. Render with HyperFrames using `npm run render -- --style <style-key>`.
+6. Render with Remotion using `npm run render -- --engine remotion --style <style-key>`.
+7. If an audio file is provided, pass `--audio ./voice.mp3`; the render scripts align visual duration to the audio duration.
 
 ## Supported Styles
 
@@ -57,8 +60,10 @@ bauhaus | destijl | constructivist | new-typography | minimal | art-deco | art-n
 npm run styles
 npm run validate
 npm run build
+npm run build:remotion
 npm run render -- --style bauhaus
-npm run render -- --style y2k --audio ./voice.mp3
+npm run render -- --engine remotion --style y2k
+npm run render -- --engine remotion --style y2k --audio ./voice.mp3
 ```
 
 ## Quality Rules
@@ -70,6 +75,7 @@ npm run render -- --style y2k --audio ./voice.mp3
 - Match visual duration to audio duration. Do not stretch audio to fit visuals.
 - Give the final frame a complete ending.
 - Use motion as hierarchy: scene entrance, light object drift, caption entrance, and clean transition.
+- Prefer Remotion when the user wants richer component logic, React animation, future caption layers, or stronger renderer extensibility.
 
 ## Agent Instructions
 
@@ -80,4 +86,6 @@ When adapting a user script:
 3. Pick a visual style that matches the topic.
 4. Keep titles short and captions direct.
 5. Validate before rendering.
-6. Render with audio when the user provides audio.
+6. Use HyperFrames for the simplest HTML path.
+7. Use Remotion for componentized animation, richer sequencing, and future production workflows.
+8. Render with audio when the user provides audio.
