@@ -1,33 +1,45 @@
 {
+  "version": "0.4",
   "meta": {
     "title": "AI Card Video Pipeline",
     "kicker": "su-card-to-video",
     "style": "bauhaus",
+    "motion": "editorial",
+    "format": "landscape",
     "width": 1920,
     "height": 1080,
     "fps": 30,
-    "compositionId": "su-card-to-video-generated"
+    "compositionId": "su-card-to-video-generated",
+    "language": "en-US"
   },
+  "audio": {
+    "source": "silent"
+  },
+  "assets": [],
   "scenes": [
     {
       "layout": "cover",
       "duration": 4.0,
       "kicker": "AI Card Video",
       "title": "Turn a script into\nmotion cards",
-      "lead": "JSON owns the content. HTML and CSS own the visual system. GSAP owns rhythm. FFmpeg owns delivery.",
-      "caption": "Generate a 16:9 HTML composition, then render it to MP4.",
-      "marquee": "script / card / motion / audio / mp4"
+      "lead": "JSON owns the content. HTML and CSS own the visual system. GSAP and Remotion own rhythm. FFmpeg owns delivery.",
+      "caption": "Generate a 16:9 HTML or Remotion composition, then render it to MP4.",
+      "captions": [
+        { "start": 0.2, "end": 2.0, "text": "Start from one structured script." },
+        { "start": 2.0, "end": 3.8, "text": "Render it as a reusable card video." }
+      ],
+      "marquee": "script / spec / style / motion / audio / mp4"
     },
     {
       "layout": "cards",
       "duration": 4.8,
       "kicker": "Engine",
       "title": "What changed in this version",
-      "lead": "Content, style, timing and output path are now controlled by data and flags.",
+      "lead": "Content, style, timing, format and output path are now controlled by data and flags.",
       "cards": [
-        { "title": "JSON driven", "body": "Edit data/demo-video.json instead of hand-editing HTML every time." },
-        { "title": "Style selectable", "body": "Choose from Bauhaus, Art Deco, Pop Art, Y2K and more." },
-        { "title": "Audio aware", "body": "When audio is passed in, ffprobe reads duration and the visuals are rebuilt to match." }
+        { "title": "Script planner", "body": "Turn markdown or plain text into a draft JSON video spec." },
+        { "title": "Timed captions", "body": "Scenes can carry frame-ready caption segments for Remotion." },
+        { "title": "Format aware", "body": "Landscape, vertical, square and wide outputs share one spec model." }
       ],
       "caption": "The workflow stays local, simple and friendly to coding agents."
     },
@@ -37,23 +49,23 @@
       "kicker": "Workflow",
       "title": "From script to video",
       "steps": [
-        { "title": "Write script", "body": "Put titles, cards, captions, steps and metrics in JSON." },
-        { "title": "Pick style", "body": "Use --style to switch between 16 visual systems." },
-        { "title": "Build HTML", "body": "Generate a 1920 by 1080 composition and render metadata." },
-        { "title": "Mux MP4", "body": "HyperFrames renders visuals. FFmpeg combines audio and video." }
+        { "title": "Plan", "body": "Generate a draft spec from a markdown or narration script." },
+        { "title": "Validate", "body": "Run structural checks and write a quality report." },
+        { "title": "Preview", "body": "Export posters, keyframes or a style gallery." },
+        { "title": "Render", "body": "Use HyperFrames or Remotion, then mux audio with FFmpeg." }
       ],
-      "caption": "Visual duration can come from JSON or from the audio file."
+      "caption": "Visual duration can come from JSON, CLI flags or the audio file."
     },
     {
       "layout": "metrics",
       "duration": 4.0,
-      "kicker": "Visual Systems",
-      "title": "More expressive card videos",
-      "lead": "The visual grammar borrows from the social card style system and adds motion layers for video.",
+      "kicker": "Production",
+      "title": "More complete card-video production",
+      "lead": "The upgrade keeps the minimal workflow while adding production-oriented controls.",
       "metrics": [
         { "value": "16", "label": "style presets" },
-        { "value": "5", "label": "scene layouts" },
-        { "value": "1", "label": "local render command" }
+        { "value": "4", "label": "target formats" },
+        { "value": "2", "label": "render engines" }
       ],
       "caption": "Style switches affect color, type, border, texture, shapes and motion tone."
     },
@@ -61,10 +73,10 @@
       "layout": "closing",
       "duration": 3.2,
       "kicker": "Ready",
-      "title": "Edit text, switch style, add audio, reuse",
-      "lead": "This is now an extensible skeleton for card-video production.",
-      "cta": "npm run render -- --style y2k",
-      "caption": "Next layers can include TTS, batch rendering and publishing workflows."
+      "title": "Plan, validate, preview, render, batch",
+      "lead": "This is now a local skeleton for repeatable card-video production.",
+      "cta": "npm run card-video",
+      "caption": "Next layers can continue with richer layouts and publishing integrations."
     }
   ]
 }
