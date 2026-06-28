@@ -8,10 +8,14 @@ HTML_OUT="$ROOT_DIR/examples/generated-16x9/index.html"
 FINAL_VIDEO="$ROOT_DIR/examples/generated-16x9/output/final.mp4"
 ENGINE="hyperframes"
 STYLE=""
+FORMAT=""
+MOTION=""
+TRANSCRIPT=""
 AUDIO_INPUT=""
 DURATION=""
 FPS="30"
 QUALITY="standard"
+REPORT_PATH=""
 
 usage() {
   cat <<'EOF'
@@ -25,22 +29,37 @@ Options:
   --engine          hyperframes or remotion. Default: hyperframes
   --input, -i       JSON video spec. Default: data/demo-video.json
   --style, -s       Visual style key. Overrides meta.style.
+  --format          landscape | vertical | square | wide
+  --motion          Motion preset
   --audio, -a       Audio file. Positional audio path is also accepted.
+  --transcript      SRT, VTT, JSON, or text transcript
   --out, -o         Final MP4 path. Default: examples/generated-16x9/output/final.mp4
+  --report          Quality report path
   --duration        Visual duration in seconds. Audio duration wins when --audio is provided.
   --fps             Render metadata FPS. Default: 30
   --quality         HyperFrames quality. Default: standard
 EOF
 }
 
+resolve_path() {
+  case "$1" in
+    /*) printf "%s" "$1" ;;
+    *) printf "%s/%s" "$ROOT_DIR" "$1" ;;
+  esac
+}
+
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --help|-h) usage; exit 0 ;;
     --engine) ENGINE="$2"; shift 2 ;;
-    --input|-i) INPUT_SPEC="$ROOT_DIR/$2"; shift 2 ;;
+    --input|-i) INPUT_SPEC="$(resolve_path "$2")"; shift 2 ;;
     --style|-s) STYLE="$2"; shift 2 ;;
+    --format) FORMAT="$2"; shift 2 ;;
+    --motion) MOTION="$2"; shift 2 ;;
     --audio|-a) AUDIO_INPUT="$2"; shift 2 ;;
-    --out|-o) FINAL_VIDEO="$ROOT_DIR/$2"; shift 2 ;;
+    --transcript) TRANSCRIPT="$2"; shift 2 ;;
+    --out|-o) FINAL_VIDEO="$(resolve_path "$2")"; shift 2 ;;
+    --report) REPORT_PATH="$(resolve_path "$2")"; shift 2 ;;
     --duration) DURATION="$2"; shift 2 ;;
     --fps) FPS="$2"; shift 2 ;;
     --quality) QUALITY="$2"; shift 2 ;;
@@ -74,10 +93,7 @@ if [[ ! -f "$INPUT_SPEC" ]]; then
 fi
 
 if [[ -n "$AUDIO_INPUT" ]]; then
-  case "$AUDIO_INPUT" in
-    /*) ;;
-    *) AUDIO_INPUT="$ROOT_DIR/$AUDIO_INPUT" ;;
-  esac
+  AUDIO_INPUT="$(resolve_path "$AUDIO_INPUT")"
   if [[ ! -f "$AUDIO_INPUT" ]]; then
     echo "Audio file not found: $AUDIO_INPUT"
     exit 1
@@ -88,10 +104,16 @@ if [[ -n "$AUDIO_INPUT" ]]; then
   fi
 fi
 
-node "$ROOT_DIR/scripts/validate-video-spec.mjs" "$INPUT_SPEC"
+VALIDATE_ARGS=("$ROOT_DIR/scripts/validate-video-spec.mjs" "$INPUT_SPEC")
+if [[ -n "$REPORT_PATH" ]]; then VALIDATE_ARGS+=(--report "$REPORT_PATH"); fi
+node "${VALIDATE_ARGS[@]}"
 
 BUILD_ARGS=("$ROOT_DIR/scripts/build-video-html.mjs" --input "$INPUT_SPEC" --out "$HTML_OUT" --fps "$FPS")
 if [[ -n "$STYLE" ]]; then BUILD_ARGS+=(--style "$STYLE"); fi
+if [[ -n "$FORMAT" ]]; then BUILD_ARGS+=(--format "$FORMAT"); fi
+if [[ -n "$MOTION" ]]; then BUILD_ARGS+=(--motion "$MOTION"); fi
+if [[ -n "$TRANSCRIPT" ]]; then BUILD_ARGS+=(--transcript "$(resolve_path "$TRANSCRIPT")"); fi
+if [[ -n "$AUDIO_INPUT" ]]; then BUILD_ARGS+=(--audio "$AUDIO_INPUT"); fi
 if [[ -n "$DURATION" ]]; then BUILD_ARGS+=(--duration "$DURATION"); fi
 node "${BUILD_ARGS[@]}"
 
