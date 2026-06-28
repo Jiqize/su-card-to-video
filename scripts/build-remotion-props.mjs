@@ -5,7 +5,9 @@ import { STYLE_KEYS } from "./lib/video-styles.mjs";
 import { normalizeSpec, parseArgs, printHelp, readJson, renderMeta } from "./lib/video-spec.mjs";
 
 function main() {
-  const args = parseArgs(process.argv.slice(2));
+  const rawArgs = process.argv.slice(2);
+  const args = parseArgs(rawArgs);
+  const hasExplicitOut = rawArgs.some(arg => arg === "--out" || arg === "-o");
   if (args.help) {
     printHelp();
     return;
@@ -16,7 +18,7 @@ function main() {
   }
 
   const inputPath = path.resolve(args.input);
-  const outPath = path.resolve(args.out || "examples/generated-remotion/props.json");
+  const outPath = path.resolve(hasExplicitOut ? args.out : "examples/generated-remotion/props.json");
   const spec = normalizeSpec(readJson(inputPath), args);
   fs.mkdirSync(path.dirname(outPath), { recursive: true });
   fs.writeFileSync(outPath, JSON.stringify(spec, null, 2) + "\n");
