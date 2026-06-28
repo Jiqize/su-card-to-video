@@ -1,14 +1,22 @@
 {
   "name": "su-card-to-video",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
-  "description": "A JSON-driven multistyle HTML/CSS card-to-video skill using HyperFrames, GSAP, and FFmpeg.",
+  "description": "A JSON-driven multistyle HTML/CSS and Remotion card-to-video skill using GSAP, HyperFrames, Remotion, and FFmpeg.",
   "scripts": {
     "doctor": "bash scripts/check-env.sh",
     "validate": "node scripts/validate-video-spec.mjs data/demo-video.json",
     "build": "node scripts/build-video-html.mjs",
+    "build:remotion": "node scripts/build-remotion-props.mjs",
     "render": "bash scripts/render.sh",
+    "render:remotion": "bash scripts/render-remotion.sh",
     "styles": "node scripts/build-video-html.mjs --list-styles"
+  },
+  "dependencies": {
+    "@remotion/cli": "latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "remotion": "latest"
   },
   "devDependencies": {
     "hyperframes": "latest"
