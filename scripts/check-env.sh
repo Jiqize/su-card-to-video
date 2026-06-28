@@ -15,18 +15,24 @@ check_cmd() {
   fi
 }
 
+check_npx_package() {
+  local name="$1"
+  local hint="$2"
+  if npx --yes "$name" --version >/dev/null 2>&1; then
+    echo "ok: $name -> npx $name"
+  else
+    echo "missing: $name"
+    echo "  install: $hint"
+    missing=1
+  fi
+}
+
 check_cmd node "brew install node"
 check_cmd npm "brew install node"
 check_cmd ffmpeg "brew install ffmpeg"
 check_cmd ffprobe "brew install ffmpeg"
-
-if npx --yes hyperframes --version >/dev/null 2>&1; then
-  echo "ok: hyperframes -> npx hyperframes"
-else
-  echo "missing: hyperframes"
-  echo "  install: npm install"
-  missing=1
-fi
+check_npx_package hyperframes "npm install"
+check_npx_package remotion "npm install"
 
 if [ "$missing" -ne 0 ]; then
   echo
@@ -36,4 +42,3 @@ fi
 
 echo
 echo "All required tools are available."
-
