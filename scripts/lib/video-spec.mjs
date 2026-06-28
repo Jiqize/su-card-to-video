@@ -169,8 +169,11 @@ export function normalizeSpec(rawSpec, args = {}) {
   scenes = attachTranscriptCaptions(rawSpec, scenes, args.input, audio);
 
   const compositionId = clean(meta.compositionId, "su-card-to-video-generated").replace(/[^a-zA-Z0-9_-]/g, "-");
-  const width = Math.round(positiveNumber(args.width, positiveNumber(meta.width, format.width)));
-  const height = Math.round(positiveNumber(args.height, positiveNumber(meta.height, format.height)));
+  const cliFormatOverride = Boolean(args.format);
+  const widthFallback = cliFormatOverride ? format.width : positiveNumber(meta.width, format.width);
+  const heightFallback = cliFormatOverride ? format.height : positiveNumber(meta.height, format.height);
+  const width = Math.round(positiveNumber(args.width, widthFallback));
+  const height = Math.round(positiveNumber(args.height, heightFallback));
   return {
     version: clean(rawSpec.version, "0.4"),
     meta: {
@@ -209,13 +212,6 @@ export function renderMeta(spec) {
     compositionId: spec.meta.compositionId,
     audio: spec.audio,
     assets: spec.assets.map(asset => ({ id: asset.id, type: asset.type, path: asset.path, required: asset.required })),
-    scenes: spec.scenes.map(scene => ({
-      id: scene.id,
-      layout: scene.layout,
-      start: scene.start,
-      duration: scene.duration,
-      title: String(scene.title || ""),
-      captions: Array.isArray(scene.captions) ? scene.captions.length : 0
-    }))
+    scenes: spec.scenes.map(scene => ({ id: scene.id, layout: scene.layout, start: scene.start, duration: scene.duration, title: String(scene.title || ""), captions: Array.isArray(scene.captions) ? scene.captions.length : 0 }))
   };
 }
