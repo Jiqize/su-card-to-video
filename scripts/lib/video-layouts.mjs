@@ -4,18 +4,23 @@ function esc(value) {
 
 function text(value) { return esc(value).replaceAll("\n", "<br>"); }
 function list(value, fallback) { return Array.isArray(value) && value.length ? value : fallback; }
-
-function top(scene, spec) {
-  return `<div class="topline"><span>${esc(scene.kicker || spec.meta.kicker)}</span><span>${esc(scene.meta || spec.style.label)}</span></div>`;
+function top(scene, spec) { return `<div class="topline"><span>${esc(scene.kicker || spec.meta.kicker)}</span><span>${esc(scene.meta || spec.style.label)}</span></div>`; }
+function timedCaptions(scene) {
+  if (!Array.isArray(scene.captions) || !scene.captions.length) return "";
+  return `<div class="timed-captions">${scene.captions.map(caption => `<span data-start="${caption.start}" data-end="${caption.end}">${text(caption.text)}</span>`).join("")}</div>`;
 }
-function caption(scene) { return scene.caption ? `<div class="caption">${text(scene.caption)}</div>` : ""; }
+function caption(scene) { return `${scene.caption ? `<div class="caption">${text(scene.caption)}</div>` : ""}${timedCaptions(scene)}`; }
 function bg() { return `<div class="scene-bg"><span class="shape shape-one"></span><span class="shape shape-two"></span><span class="shape shape-three"></span></div>`; }
-function motif(scene) {
-  return `<div class="visual-stack"><div class="orbit orbit-a"></div><div class="orbit orbit-b"></div><div class="motif-grid"><i class="motif-piece a"></i><i class="motif-piece b"></i><i class="motif-piece c"></i><i class="motif-piece d"></i></div><div class="ticker marquee"><span class="marquee-track">${esc(scene.marquee || "HTML / CSS / GSAP / FFMPEG / LOCAL VIDEO")}</span></div></div>`;
+function motif(scene) { return `<div class="visual-stack"><div class="orbit orbit-a"></div><div class="orbit orbit-b"></div><div class="motif-grid"><i class="motif-piece a"></i><i class="motif-piece b"></i><i class="motif-piece c"></i><i class="motif-piece d"></i></div><div class="ticker marquee"><span class="marquee-track">${esc(scene.marquee || "HTML / CSS / GSAP / FFMPEG / LOCAL VIDEO")}</span></div></div>`; }
+function assetPanel(scene, spec) {
+  const assetId = scene.asset || scene.media;
+  const asset = assetId && Array.isArray(spec.assets) ? spec.assets.find(item => item.id === assetId) : null;
+  if (!asset || !asset.path) return motif(scene);
+  return `<figure class="visual-stack asset-panel"><img src="${esc(asset.path)}" alt="${esc(asset.alt || asset.id)}"/><figcaption>${esc(asset.caption || asset.credit || asset.id)}</figcaption></figure>`;
 }
 
 function cover(scene, spec) {
-  return `<div class="scene-grid two-col"><div class="copy-block">${top(scene, spec)}<div class="kicker">${esc(scene.kicker || spec.meta.kicker)}</div><h1 class="title">${text(scene.title || spec.meta.title)}</h1><p class="lead">${text(scene.lead || "")}</p></div>${motif(scene)}</div>${caption(scene)}`;
+  return `<div class="scene-grid two-col"><div class="copy-block">${top(scene, spec)}<div class="kicker">${esc(scene.kicker || spec.meta.kicker)}</div><h1 class="title">${text(scene.title || spec.meta.title)}</h1><p class="lead">${text(scene.lead || "")}</p></div>${assetPanel(scene, spec)}</div>${caption(scene)}`;
 }
 function cards(scene, spec) {
   const cards = list(scene.cards, [{ title: "JSON driven", body: "Write content once and generate a reusable HTML composition." }, { title: "Style selectable", body: "Switch visual systems with one flag." }, { title: "Motion ready", body: "Scenes, captions, and motifs animate together." }]);
@@ -33,9 +38,16 @@ function metrics(scene, spec) {
 function closing(scene, spec) {
   return `<div class="scene-grid closing-layout"><div class="closing-panel">${top(scene, spec)}<div class="kicker">${esc(scene.kicker || "Ready")}</div><h2 class="title">${text(scene.title || "Render the next video")}</h2>${scene.lead ? `<p class="lead narrow">${text(scene.lead)}</p>` : ""}<div class="cta-row"><span class="pill">${esc(scene.cta || "npm run render")}</span><span class="pill ghost">${esc(spec.style.label)}</span></div></div></div>${caption(scene)}`;
 }
+function quote(scene, spec) { return `<div class="scene-grid closing-layout"><div class="closing-panel quote-panel">${top(scene, spec)}<div class="kicker">${esc(scene.kicker || "Quote")}</div><h2 class="title">“${text(scene.quote || scene.title)}”</h2>${scene.lead ? `<p class="lead narrow">${text(scene.lead)}</p>` : ""}</div></div>${caption(scene)}`; }
+function dataStory(scene, spec) {
+  const items = scene.data?.items || scene.metrics || [];
+  return `<div class="scene-grid two-col metrics-layout"><div class="copy-block">${top(scene, spec)}<div class="kicker">${esc(scene.kicker || "Data")}</div><h2 class="title title-md">${text(scene.title || "Data story")}</h2>${scene.lead ? `<p class="lead">${text(scene.lead)}</p>` : ""}</div><div class="metric-panel chart-panel">${items.map(item => `<div class="metric-row"><strong>${esc(item.value)}</strong><span>${esc(item.label || item.name || "")}</span></div>`).join("")}</div></div>${caption(scene)}`;
+}
+function product(scene, spec) { return `<div class="scene-grid two-col"><div class="copy-block">${top(scene, spec)}<div class="kicker">${esc(scene.kicker || "Product")}</div><h2 class="title title-md">${text(scene.title || "Product story")}</h2>${scene.lead ? `<p class="lead">${text(scene.lead)}</p>` : ""}</div>${assetPanel(scene, spec)}</div>${caption(scene)}`; }
 
-const layouts = { cover, cards, process, metrics, closing };
+const layouts = { cover, cards, process, metrics, closing, quote, comparison: cards, "before-after": cards, timeline: process, ranking: process, "myth-fact": cards, checklist: process, framework: cards, "case-study": cards, "data-story": dataStory, product, gallery: product, faq: process };
 export { esc };
 export function renderScene(scene, spec, index) {
-  return `<section id="${scene.id}" class="scene ${index === 0 ? "is-first" : ""}" data-layout="${scene.layout}" data-start="${scene.start}" data-duration="${scene.duration}">${bg()}${layouts[scene.layout](scene, spec)}</section>`;
+  const renderer = layouts[scene.layout] || cards;
+  return `<section id="${scene.id}" class="scene ${index === 0 ? "is-first" : ""}" data-layout="${scene.layout}" data-start="${scene.start}" data-duration="${scene.duration}">${bg()}${renderer(scene, spec)}</section>`;
 }
