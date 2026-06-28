@@ -1,8 +1,8 @@
 # su-card-to-video
 
-A JSON-driven card-video starter. It turns a script file into a 16:9 composition, renders it through HyperFrames or Remotion, then muxes the result with an audio file through FFmpeg.
+A local-first, JSON-driven card-video Skill. It can plan a video spec from a script, validate the spec, render through HyperFrames or Remotion, export previews, and mux the result with prepared audio through FFmpeg.
 
-This branch upgrades the original single demo into a reusable local video engine. Content lives in JSON, visual style is selectable, visual duration can be aligned to audio duration, and the renderer is selectable with `--engine hyperframes` or `--engine remotion`.
+This branch upgrades the original demo into a reusable card-video production system. Content lives in JSON, visual style is selectable, output format is selectable, visual duration can align to audio duration, and the renderer is selected with `--engine hyperframes` or `--engine remotion`.
 
 ## Install
 
@@ -29,6 +29,14 @@ Default HyperFrames MP4:
 examples/generated-16x9/output/final.mp4
 ```
 
+## Plan from a script
+
+```bash
+npm run plan -- --input examples/scripts/demo.md --out data/generated-video.json --style auto
+node scripts/validate-video-spec.mjs data/generated-video.json
+npm run render -- --input data/generated-video.json --style bauhaus
+```
+
 ## Render with Remotion
 
 ```bash
@@ -45,15 +53,35 @@ examples/generated-remotion/render-meta.json
 examples/generated-remotion/output/final.mp4
 ```
 
-## Render with style and audio
+## Formats, captions, and reports
 
 ```bash
-npm run styles
-npm run render -- --style y2k
-npm run render -- --style art-deco --audio ./voice.mp3
+npm run render -- --engine remotion --format vertical --style y2k
+npm run render -- --engine remotion --transcript ./captions.srt --audio ./voice.mp3
+node scripts/validate-video-spec.mjs data/demo-video.json --report examples/generated-remotion/quality-report.json
 ```
 
-When audio is passed in, the render scripts read its duration with `ffprobe` and rebuild the visual composition with the same total duration.
+Supported formats: `landscape`, `vertical`, `square`, `wide`.
+
+## Previews
+
+```bash
+npm run poster -- --style bauhaus --frame 0
+npm run keyframes -- --engine remotion --style y2k
+npm run gallery -- --input data/demo-video.json
+```
+
+Preview outputs are written under `previews/`.
+
+## Batch and unified CLI
+
+```bash
+npm run card-video -- init ./task
+npm run card-video -- plan ./task/script.md --out ./task/video.json
+npm run card-video -- validate ./task/video.json --report ./task/report.json
+npm run card-video -- render ./task --engine remotion --style y2k
+npm run batch -- ./campaign --engine remotion --style y2k
+```
 
 ## Supported visual styles
 
@@ -78,31 +106,11 @@ y2k
 
 The style system is inspired by the multi-style social-card workflow in `xiaoliang-socialcard-skills`, then adapted for video with scene entrances, floating shapes, motif motion, tickers, captions and scene transitions.
 
-## Input spec
+## Scene layouts
 
-Default spec:
+Current primary layouts: `cover`, `cards`, `process`, `metrics`, `closing`.
 
-```text
-data/demo-video.json
-```
-
-Scene layouts:
-
-- `cover`: opening title scene
-- `cards`: information cards
-- `process`: step-by-step sequence
-- `metrics`: large number and metric rows
-- `closing`: final call-to-action scene
-
-Useful commands:
-
-```bash
-node scripts/validate-video-spec.mjs data/demo-video.json
-node scripts/build-video-html.mjs --input data/demo-video.json --style pop-art
-node scripts/build-remotion-props.mjs --input data/demo-video.json --style pop-art
-bash scripts/render.sh --input data/demo-video.json --style brutalist --audio ./voice.mp3
-bash scripts/render.sh --engine remotion --input data/demo-video.json --style y2k --audio ./voice.mp3
-```
+Roadmap-compatible fallback layouts are also accepted by the spec and renderers: `quote`, `comparison`, `before-after`, `timeline`, `ranking`, `myth-fact`, `checklist`, `framework`, `case-study`, `data-story`, `product`, `gallery`, `faq`.
 
 ## Generated files
 
@@ -120,13 +128,7 @@ examples/generated-remotion/output/final.mp4
 
 ## Agent workflow
 
-Give the whole repository to a coding agent, ask it to edit `data/demo-video.json`, then run either renderer:
-
-```bash
-npm run validate
-npm run render -- --style bauhaus
-npm run render -- --engine remotion --style bauhaus
-```
+Give the whole repository to a coding agent. The agent should edit source inputs such as `script.md` or `data/demo-video.json`, then run validation, preview, and render commands. Generated HTML and generated Remotion props should only be edited for renderer debugging.
 
 ## License
 
