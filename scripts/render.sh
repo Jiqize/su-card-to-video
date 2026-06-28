@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+ORIGINAL_ARGS=("$@")
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 INPUT_SPEC="$ROOT_DIR/data/demo-video.json"
 HTML_OUT="$ROOT_DIR/examples/generated-16x9/index.html"
 FINAL_VIDEO="$ROOT_DIR/examples/generated-16x9/output/final.mp4"
+ENGINE="hyperframes"
 STYLE=""
 AUDIO_INPUT=""
 DURATION=""
@@ -16,9 +18,11 @@ usage() {
 Usage:
   npm run render
   npm run render -- --style y2k
+  npm run render -- --engine remotion --style y2k
   npm run render -- --input data/demo-video.json --audio ./voice.mp3 --style art-deco
 
 Options:
+  --engine          hyperframes or remotion. Default: hyperframes
   --input, -i       JSON video spec. Default: data/demo-video.json
   --style, -s       Visual style key. Overrides meta.style.
   --audio, -a       Audio file. Positional audio path is also accepted.
@@ -32,6 +36,7 @@ EOF
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --help|-h) usage; exit 0 ;;
+    --engine) ENGINE="$2"; shift 2 ;;
     --input|-i) INPUT_SPEC="$ROOT_DIR/$2"; shift 2 ;;
     --style|-s) STYLE="$2"; shift 2 ;;
     --audio|-a) AUDIO_INPUT="$2"; shift 2 ;;
@@ -43,6 +48,14 @@ while [[ $# -gt 0 ]]; do
     *) AUDIO_INPUT="$1"; shift ;;
   esac
 done
+
+if [[ "$ENGINE" == "remotion" ]]; then
+  exec bash "$ROOT_DIR/scripts/render-remotion.sh" "${ORIGINAL_ARGS[@]}"
+elif [[ "$ENGINE" != "hyperframes" ]]; then
+  echo "Unknown engine: $ENGINE"
+  usage
+  exit 1
+fi
 
 require_cmd() {
   if ! command -v "$1" >/dev/null 2>&1; then
