@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ORIGINAL_ARGS=("$@")
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 INPUT_SPEC="$ROOT_DIR/data/demo-video.json"
-HTML_OUT="$ROOT_DIR/examples/generated-16x9/index.html"
-FINAL_VIDEO="$ROOT_DIR/examples/generated-16x9/output/final.mp4"
-ENGINE="hyperframes"
+PROPS_OUT="$ROOT_DIR/examples/generated-remotion/props.json"
+FINAL_VIDEO="$ROOT_DIR/examples/generated-remotion/output/final.mp4"
+ENTRY_POINT="$ROOT_DIR/remotion/index.jsx"
+COMPOSITION_ID="CardVideo"
 STYLE=""
 FORMAT=""
 MOTION=""
@@ -14,30 +14,30 @@ TRANSCRIPT=""
 AUDIO_INPUT=""
 DURATION=""
 FPS="30"
-QUALITY="standard"
+CRF="18"
+CONCURRENCY=""
 REPORT_PATH=""
 
 usage() {
   cat <<'EOF'
 Usage:
-  npm run render
-  npm run render -- --style y2k
+  npm run render:remotion
   npm run render -- --engine remotion --style y2k
-  npm run render -- --input data/demo-video.json --audio ./voice.mp3 --style art-deco
+  npm run render:remotion -- --input data/demo-video.json --audio ./voice.mp3 --style art-deco
 
 Options:
-  --engine          hyperframes or remotion. Default: hyperframes
   --input, -i       JSON video spec. Default: data/demo-video.json
   --style, -s       Visual style key. Overrides meta.style.
   --format          landscape | vertical | square | wide
   --motion          Motion preset
   --audio, -a       Audio file. Positional audio path is also accepted.
   --transcript      SRT, VTT, JSON, or text transcript
-  --out, -o         Final MP4 path. Default: examples/generated-16x9/output/final.mp4
+  --out, -o         Final MP4 path. Default: examples/generated-remotion/output/final.mp4
   --report          Quality report path
   --duration        Visual duration in seconds. Audio duration wins when --audio is provided.
-  --fps             Render metadata FPS. Default: 30
-  --quality         HyperFrames quality. Default: standard
+  --fps             FPS passed into the Remotion props builder. Default: 30
+  --crf             Remotion H.264 CRF. Default: 18
+  --concurrency     Optional Remotion render concurrency, for example 50% or 4.
 EOF
 }
 
@@ -51,7 +51,7 @@ resolve_path() {
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --help|-h) usage; exit 0 ;;
-    --engine) ENGINE="$2"; shift 2 ;;
+    --engine) shift 2 ;;
     --input|-i) INPUT_SPEC="$(resolve_path "$2")"; shift 2 ;;
     --style|-s) STYLE="$2"; shift 2 ;;
     --format) FORMAT="$2"; shift 2 ;;
@@ -62,19 +62,13 @@ while [[ $# -gt 0 ]]; do
     --report) REPORT_PATH="$(resolve_path "$2")"; shift 2 ;;
     --duration) DURATION="$2"; shift 2 ;;
     --fps) FPS="$2"; shift 2 ;;
-    --quality) QUALITY="$2"; shift 2 ;;
+    --crf) CRF="$2"; shift 2 ;;
+    --concurrency) CONCURRENCY="$2"; shift 2 ;;
+    --quality) shift 2 ;;
     --*) echo "Unknown option: $1"; usage; exit 1 ;;
     *) AUDIO_INPUT="$1"; shift ;;
   esac
 done
-
-if [[ "$ENGINE" == "remotion" ]]; then
-  exec bash "$ROOT_DIR/scripts/render-remotion.sh" "${ORIGINAL_ARGS[@]}"
-elif [[ "$ENGINE" != "hyperframes" ]]; then
-  echo "Unknown engine: $ENGINE"
-  usage
-  exit 1
-fi
 
 require_cmd() {
   if ! command -v "$1" >/dev/null 2>&1; then
@@ -108,7 +102,7 @@ VALIDATE_ARGS=("$ROOT_DIR/scripts/validate-video-spec.mjs" "$INPUT_SPEC")
 if [[ -n "$REPORT_PATH" ]]; then VALIDATE_ARGS+=(--report "$REPORT_PATH"); fi
 node "${VALIDATE_ARGS[@]}"
 
-BUILD_ARGS=("$ROOT_DIR/scripts/build-video-html.mjs" --input "$INPUT_SPEC" --out "$HTML_OUT" --fps "$FPS")
+BUILD_ARGS=("$ROOT_DIR/scripts/build-remotion-props.mjs" --input "$INPUT_SPEC" --out "$PROPS_OUT" --fps "$FPS")
 if [[ -n "$STYLE" ]]; then BUILD_ARGS+=(--style "$STYLE"); fi
 if [[ -n "$FORMAT" ]]; then BUILD_ARGS+=(--format "$FORMAT"); fi
 if [[ -n "$MOTION" ]]; then BUILD_ARGS+=(--motion "$MOTION"); fi
@@ -119,12 +113,15 @@ node "${BUILD_ARGS[@]}"
 
 OUTPUT_DIR="$(dirname "$FINAL_VIDEO")"
 mkdir -p "$OUTPUT_DIR"
-RAW_VIDEO="$OUTPUT_DIR/cards.mp4"
+RAW_VIDEO="$OUTPUT_DIR/cards-remotion.mp4"
 SILENT_AUDIO="$OUTPUT_DIR/silence.m4a"
-
-RENDER_DIR="$(dirname "$HTML_OUT")"
-META_FILE="$RENDER_DIR/render-meta.json"
+META_FILE="$(dirname "$PROPS_OUT")/render-meta.json"
 VISUAL_DURATION="$(node -e 'const fs=require("fs");const m=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));console.log(m.duration)' "$META_FILE")"
+
+echo "Rendering cards with Remotion..."
+RENDER_ARGS=(render "$ENTRY_POINT" "$COMPOSITION_ID" "$RAW_VIDEO" --props "$PROPS_OUT" --codec h264 --crf "$CRF" --pixel-format yuv420p --overwrite)
+if [[ -n "$CONCURRENCY" ]]; then RENDER_ARGS+=(--concurrency "$CONCURRENCY"); fi
+npx --yes remotion "${RENDER_ARGS[@]}"
 
 if [[ -z "$AUDIO_INPUT" ]]; then
   echo "No audio provided. Creating silent placeholder for ${VISUAL_DURATION}s..."
@@ -132,13 +129,7 @@ if [[ -z "$AUDIO_INPUT" ]]; then
   AUDIO_INPUT="$SILENT_AUDIO"
 fi
 
-echo "Rendering HTML cards with HyperFrames..."
-(
-  cd "$RENDER_DIR"
-  npx --yes hyperframes render --output "$RAW_VIDEO" --quality "$QUALITY" --fps "$FPS"
-)
-
-echo "Muxing video and audio with FFmpeg..."
+echo "Muxing Remotion video and audio with FFmpeg..."
 ffmpeg -y \
   -i "$RAW_VIDEO" \
   -i "$AUDIO_INPUT" \
